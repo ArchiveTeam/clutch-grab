@@ -49,7 +49,7 @@ if not WGET_AT:
 #
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
-VERSION = '20200810.01'
+VERSION = '20200810.02'
 USER_AGENT = 'Archive Team '
 TRACKER_ID = 'clutch'
 TRACKER_HOST = 'trackerproxy.meo.ws'
@@ -237,7 +237,7 @@ pipeline = Pipeline(
         id_function=stats_id_function,
     ),
     MoveFiles(),
-    LimitConcurrent(NumberConfigValue(min=1, max=20, default='2',
+    LimitConcurrent(NumberConfigValue(min=1, max=20, default='20',
         name='shared:rsync_threads', title='Rsync threads',
         description='The maximum number of concurrent uploads.'),
         UploadWithTracker(
