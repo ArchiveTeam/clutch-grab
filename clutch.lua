@@ -66,8 +66,11 @@ allowed = function(url, parenturl, force)
     tested[s] = tested[s] + 1
   end
 
-  if string.match(url, "^https?://[^/]*fastly%.net/")
-    or string.match(url, "^https?://[^/]*googleapis%.com/") then
+  if (
+      string.match(url, "^https?://[^/]*fastly%.net/")
+      or string.match(url, "^https?://[^/]*googleapis%.com/")
+    )
+    and item_type == "video" then
     if ids[string.match(url, "^https?://[^/]+(/.+)$")] then
       return true
     end
@@ -163,10 +166,27 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
     html = read_file(file)
     if string.match(url, "^https?://api%.clutch%.win/v1/posts/[^/]+/$") then
       local data = load_json_file(html)
-      ids[data["data"]["post"]["slug"]] = true
-      ids[string.match(data["data"]["post"]["video_url"], "^https?://[^/]+(/.+)$")] = true
-      check(data["data"]["post"]["video_url"])
-      check(data["data"]["post"]["share_url"])
+      if item_type == "video" then
+        ids[string.match(data["data"]["post"]["video_url"], "^https?://[^/]+(/.+)$")] = true
+        check(data["data"]["post"]["video_url"])
+        check(url .. "comments/")
+        check(url .. "likes/")
+        check(url .. "reposts/")
+        check("https://api.clutch.win/v1/posts/" .. data["data"]["post"]["slug"], true)
+      elseif item_type == "post" then
+        ids[data["data"]["post"]["slug"]] = true
+        check(data["data"]["post"]["share_url"])
+      end
+    end
+    if string.match(url, "^https?://api%.clutch%.win/") then
+      local data = load_json_file(html)
+      if data["cursor"] then
+        if string.find(url, "cursor=") then
+          check(string.gsub(url, "cursor=[^%?&/]+", "cursor=" .. data["cursor"]))
+        else
+          check(url .. "?cursor=" .. data["cursor"])
+        end
+      end
     end
     for newurl in string.gmatch(string.gsub(html, "&quot;", '"'), '([^"]+)') do
       checknewurl(newurl)
