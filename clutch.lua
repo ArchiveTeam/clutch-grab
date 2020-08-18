@@ -177,6 +177,11 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
         ids[data["data"]["post"]["slug"]] = true
         check(data["data"]["post"]["share_url"])
       end
+    elseif string.match(url, "^https?://api%.clutch%.win/v1/users/[^/]+/$") then
+      local data = load_json_file(html)
+      check("https://api.clutch.win/v1/users/" .. data["data"]["user"]["username"] .. "/", true)
+      check(url .. "posts/")
+      check(url .. "posts/compact/")
     end
     if string.match(url, "^https?://api%.clutch%.win/") then
       local data = load_json_file(html)
@@ -221,7 +226,8 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
   io.stdout:write(url_count .. "=" .. status_code .. " " .. url["url"] .. "  \n")
   io.stdout:flush()
 
-  if string.match(url["url"], "^https?://api%.clutch%.win/v1/posts/[^/]+/$") then
+  if string.match(url["url"], "^https?://api%.clutch%.win/v1/posts/[^/]+/$")
+    or string.match(url["url"], "^https?://api%.clutch%.win/v1/users/[^/]+/$") then
     ids[string.match(url["url"], "([^/]+)/$")] = true
   end
 
